@@ -5,13 +5,19 @@ edition.workspace = true
 license.workspace = true
 repository.workspace = true
 description.workspace = true
+homepage.workspace = true
+exclude.workspace = true
+keywords.workspace = true
+categories.workspace = true
+readme = "README.md"
 
 [features]
 default = ["boolean", "parallel", "serde"]
-boolean = []
-integer8 = []
+boolean = ["tfhe/boolean"]
+integer = ["tfhe/integer"]
 parallel = ["dep:rayon"]
 gpu = ["tfhe/gpu"]
+hpu = ["tfhe/hpu"]
 serde = ["dep:serde", "dep:serde_json"]
 macros = ["dep:encircuit_macros"]
 
