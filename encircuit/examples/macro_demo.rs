@@ -4,7 +4,7 @@ Demo showing the `circuit!` macro in action.
 This example demonstrates how to use the procedural macro to build circuits
 and integrate them with the encircuit API.
 
-Run with: `cargo run --example macro_demo --features macros`
+Run with: `cargo run -p encircuit --example macro_demo --features macros`
 */
 
 use encircuit::prelude::*;
