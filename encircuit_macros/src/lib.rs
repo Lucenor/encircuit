@@ -19,22 +19,25 @@ assert_eq!(my_circuit.input_count(), 3);
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
+use std::collections::HashMap;
 use syn::{
-    parse::{Parse, ParseStream},
-    parse_macro_input,
-    token::{And, Or, Not},
     BinOp, Expr, ExprBinary, ExprClosure, ExprParen, ExprUnary, Ident, Pat, PatIdent, PatType,
     Result, UnOp,
+    parse::{Parse, ParseStream},
+    parse_macro_input,
+    token::{And, Not, Or},
 };
-use std::collections::HashMap;
 
 /// Error messages for better diagnostics
 mod error_messages {
     pub const UNSUPPORTED_PATTERN: &str = "Only simple identifiers are supported as circuit inputs. Try using patterns like |a, b| instead of |a: bool, b: bool| or destructuring patterns.";
-    pub const UNKNOWN_VARIABLE: &str = "Unknown variable. Make sure all variables are declared as circuit inputs.";
+    pub const UNKNOWN_VARIABLE: &str =
+        "Unknown variable. Make sure all variables are declared as circuit inputs.";
     pub const UNSUPPORTED_OPERATOR: &str = "Only &, |, ^, and ! operators are supported in circuits. Use & for AND, | for OR, ^ for XOR, and ! for NOT.";
-    pub const UNSUPPORTED_UNARY: &str = "Only ! (NOT) operator is supported for unary operations in circuits.";
-    pub const UNSUPPORTED_LITERAL: &str = "Only boolean literals (true, false) are supported in circuits.";
+    pub const UNSUPPORTED_UNARY: &str =
+        "Only ! (NOT) operator is supported for unary operations in circuits.";
+    pub const UNSUPPORTED_LITERAL: &str =
+        "Only boolean literals (true, false) are supported in circuits.";
     pub const UNSUPPORTED_EXPRESSION: &str = "Unsupported expression type. Circuits support: Boolean operators (&, |, ^, !), parentheses, boolean literals (true/false), and input variables.";
 }
 
@@ -48,7 +51,7 @@ impl Parse for CircuitClosure {
     fn parse(input: ParseStream) -> Result<Self> {
         // Parse the closure: |a, b| expr
         let closure: ExprClosure = input.parse()?;
-        
+
         // Extract input parameter names
         let mut inputs = Vec::new();
         for input_pat in &closure.inputs {
@@ -130,7 +133,9 @@ impl CircuitBuilder {
             }
 
             // Binary operations: &, |, ^
-            Expr::Binary(ExprBinary { left, op, right, .. }) => {
+            Expr::Binary(ExprBinary {
+                left, op, right, ..
+            }) => {
                 let left_var = self.build_expr(left, input_map)?;
                 let right_var = self.build_expr(right, input_map)?;
                 let result_var = self.next_var();
@@ -175,9 +180,7 @@ impl CircuitBuilder {
             }
 
             // Parenthesized expressions
-            Expr::Paren(ExprParen { expr, .. }) => {
-                self.build_expr(expr, input_map)
-            }
+            Expr::Paren(ExprParen { expr, .. }) => self.build_expr(expr, input_map),
 
             // Boolean literals
             Expr::Lit(lit) => {
@@ -203,8 +206,6 @@ impl CircuitBuilder {
             )),
         }
     }
-
-
 
     /// Generate the final circuit building code
     fn finish(self, output_var: Ident, _input_names: &[Ident]) -> TokenStream2 {
@@ -265,7 +266,7 @@ impl CircuitBuilder {
 #[proc_macro]
 pub fn circuit(input: TokenStream) -> TokenStream {
     let circuit_closure = parse_macro_input!(input as CircuitClosure);
-    
+
     match generate_circuit_code(&circuit_closure) {
         Ok(code) => code.into(),
         Err(error) => error.to_compile_error().into(),
@@ -291,67 +292,67 @@ fn generate_circuit_code(closure: &CircuitClosure) -> Result<TokenStream2> {
 }
 
 /// Additional examples and usage patterns for the `circuit!` macro.
-/// 
+///
 /// # Common Patterns
-/// 
+///
 /// ## Arithmetic Circuits
-/// 
+///
 /// ```rust
 /// use encircuit_macros::circuit;
-/// 
+///
 /// // Half adder
 /// let sum = circuit! { |a, b| a ^ b };
 /// let carry = circuit! { |a, b| a & b };
-/// 
+///
 /// // Full adder  
 /// let full_sum = circuit! { |a, b, cin| a ^ b ^ cin };
 /// let full_carry = circuit! { |a, b, cin| (a & b) | (a & cin) | (b & cin) };
 /// ```
-/// 
+///
 /// ## Logic Gates
-/// 
+///
 /// ```rust
 /// use encircuit_macros::circuit;
-/// 
+///
 /// // Universal gates
 /// let nand = circuit! { |a, b| !(a & b) };
 /// let nor = circuit! { |a, b| !(a | b) };
-/// 
+///
 /// // Other common gates
 /// let xnor = circuit! { |a, b| !(a ^ b) };  // Equivalence
 /// let implies = circuit! { |a, b| !a | b }; // Implication
 /// ```
-/// 
+///
 /// ## Control Circuits
-/// 
+///
 /// ```rust
 /// use encircuit_macros::circuit;
-/// 
+///
 /// // Multiplexer: select ? b : a
 /// let mux2to1 = circuit! { |a, b, select| (a & !select) | (b & select) };
-/// 
+///
 /// // Majority function (3-input)
 /// let majority = circuit! { |a, b, c| (a & b) | (a & c) | (b & c) };
 /// ```
 ///
 /// # Error Handling
-/// 
+///
 /// The macro provides descriptive error messages for common mistakes:
-/// 
+///
 /// - Using unsupported operators
 /// - Referencing undefined variables  
 /// - Invalid closure syntax
-/// 
+///
 /// These errors are caught at compile time, preventing runtime issues.
-/// 
+///
 /// # Performance Notes
-/// 
+///
 /// - The macro generates efficient circuit-building code
 /// - No runtime overhead compared to manual circuit construction
 /// - Circuit structure is determined entirely at compile time
-/// 
+///
 /// # Future Enhancements
-/// 
+///
 /// Planned improvements include:
 /// - Support for integer operations (when the `integer8` feature is enabled)
 /// - Circuit optimization hints
