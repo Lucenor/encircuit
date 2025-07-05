@@ -1,9 +1,0 @@
-[package]
-name = "encircuit"
-version = "0.0.1-alpha.0"
-edition = "2024"
-description = "Zero-overhead Rust toolkit for building, encrypting & evaluating fully homomorphic (FHE) circuits"
-license = "Apache-2.0"
-repository = "https://github.com/lucenor/encircuit"
-
-[dependencies]
