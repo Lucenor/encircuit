@@ -89,6 +89,7 @@ encircuit/
 🚧 **Alpha Version** - This library is currently in early development.
 
 **Implemented:**
+
 - ✅ Circuit builder API
 - ✅ Type-safe circuit representation
 - ✅ Parameter configuration
@@ -97,6 +98,7 @@ encircuit/
 - ✅ Comprehensive test suite
 
 **TODO:**
+
 - 🔄 Actual TFHE integration (currently uses placeholders)
 - 🔄 `circuit!` procedural macro implementation
 - 🔄 Performance optimizations
@@ -114,7 +116,7 @@ Contributions are welcome! Please see our [contribution guidelines](CONTRIBUTING
 
 ## License
 
-Licensed under the Apache License, Version 2.0 ([LICENSE](LICENSE) or http://www.apache.org/licenses/LICENSE-2.0)
+Licensed under the Apache License, Version 2.0 ([LICENSE](LICENSE) or <http://www.apache.org/licenses/LICENSE-2.0>)
 
 ## Roadmap
 

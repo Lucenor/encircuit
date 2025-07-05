@@ -181,6 +181,7 @@ mod tests {
 When adding new ciphertext types (e.g., `Uint16Ct`, `FloatCt`):
 
 1. **Define the type** in `ciphertext.rs`:
+
 ```rust
 #[cfg(feature = "integer16")]
 #[derive(Debug, Clone)]
@@ -191,6 +192,7 @@ pub struct Uint16Ct {
 ```
 
 2. **Implement required traits**:
+
 ```rust
 impl Encryptable for u16 {
     type Ciphertext = Uint16Ct;
@@ -204,6 +206,7 @@ impl Decryptable for Uint16Ct {
 ```
 
 3. **Add feature flag** in `Cargo.toml`:
+
 ```toml
 [features]
 integer16 = []
@@ -246,6 +249,7 @@ For new features:
 
 1. **Create an issue** first for significant changes
 2. **Use descriptive commit messages**:
+
    ```
    feat: Add support for 16-bit integer ciphertexts
    
@@ -255,6 +259,7 @@ For new features:
    
    Closes #123
    ```
+
 3. **Keep PRs focused** - one feature/fix per PR
 4. **Update documentation** as needed
 5. **Respond to review feedback** promptly
