@@ -12,7 +12,7 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 /// A Boolean ciphertext that can be used in FHE computations.
-/// 
+///
 /// `BoolCt` wraps TFHE's Boolean ciphertext type and provides a clean
 /// interface for encryption, decryption, and Boolean operations.
 #[derive(Debug, Clone)]
@@ -22,7 +22,7 @@ pub struct BoolCt {
 }
 
 /// An 8-bit unsigned integer ciphertext.
-/// 
+///
 /// `Uint8Ct` enables arithmetic operations on encrypted 8-bit values.
 #[cfg(feature = "integer8")]
 #[derive(Debug, Clone)]
@@ -32,7 +32,7 @@ pub struct Uint8Ct {
 }
 
 /// Generic encrypted value wrapper.
-/// 
+///
 /// This provides a type-safe way to work with encrypted values of different types.
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]

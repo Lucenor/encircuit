@@ -6,14 +6,14 @@ ready for encryption and evaluation.
 */
 
 use crate::{
-    circuit::{Gate, NodeId},
     ciphertext::BoolCt,
+    circuit::{Gate, NodeId},
     keys::ClientKeyBytes,
 };
 use anyhow::Result;
 
 /// An immutable Boolean circuit represented as a directed acyclic graph (DAG).
-/// 
+///
 /// The `Circuit` contains all gates in topological order and provides methods
 /// for encrypting inputs and preparing for evaluation.
 #[derive(Debug, Clone)]
@@ -24,19 +24,19 @@ pub struct Circuit {
 
 impl Circuit {
     /// Create a new circuit from gates and output node.
-    /// 
+    ///
     /// This is typically called by `CircuitBuilder::finish()`.
     pub(super) fn new(gates: Vec<Gate>, output: NodeId) -> Self {
         Self { gates, output }
     }
 
     /// Encrypt the circuit inputs using the given client key.
-    /// 
+    ///
     /// The `inputs` slice must contain exactly the same number of values
     /// as there are input gates in the circuit.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// Returns an error if:
     /// - The number of inputs doesn't match the number of input gates
     /// - Encryption fails
@@ -71,17 +71,14 @@ impl Circuit {
         _client_key: &ClientKeyBytes,
     ) -> Result<super::EncryptedCircuit> {
         let mut encrypted_inputs = Vec::new();
-        
+
         for &input in inputs {
             // TODO: Implement actual encryption
             let encrypted = BoolCt::from_bytes(vec![if input { 1 } else { 0 }]);
             encrypted_inputs.push(encrypted);
         }
 
-        Ok(super::EncryptedCircuit::new(
-            self.clone(),
-            encrypted_inputs,
-        ))
+        Ok(super::EncryptedCircuit::new(self.clone(), encrypted_inputs))
     }
 
     /// Encrypt inputs in parallel using rayon.
@@ -138,7 +135,7 @@ impl Circuit {
     /// Get statistics about the circuit.
     pub fn stats(&self) -> CircuitStats {
         let mut stats = CircuitStats::default();
-        
+
         for gate in &self.gates {
             match gate {
                 Gate::Input => stats.inputs += 1,
@@ -149,7 +146,7 @@ impl Circuit {
                 Gate::Not(_) => stats.not_gates += 1,
             }
         }
-        
+
         stats.total_gates = self.gates.len();
         stats
     }

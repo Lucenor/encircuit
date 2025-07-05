@@ -8,7 +8,7 @@ it easier to configure FHE parameters for common use cases.
 use anyhow::Result;
 
 /// FHE parameter configuration builder.
-/// 
+///
 /// Provides opinionated presets for common FHE configurations.
 #[derive(Debug, Clone)]
 pub struct Builder {
@@ -53,7 +53,7 @@ impl Builder {
     }
 
     /// Configure for 128-bit security level.
-    /// 
+    ///
     /// This is the recommended security level for most applications.
     pub fn security_128(mut self) -> Self {
         self.security_level = SecurityLevel::Security128;
@@ -61,7 +61,7 @@ impl Builder {
     }
 
     /// Configure for 256-bit security level.
-    /// 
+    ///
     /// This provides higher security but with increased computation cost.
     pub fn security_256(mut self) -> Self {
         self.security_level = SecurityLevel::Security256;
@@ -69,7 +69,7 @@ impl Builder {
     }
 
     /// Configure for Boolean operations only.
-    /// 
+    ///
     /// This enables efficient Boolean circuit evaluation.
     pub fn boolean_only(mut self) -> Self {
         self.operation_types = vec![OperationType::Boolean];
@@ -85,9 +85,9 @@ impl Builder {
     }
 
     /// Build the final parameters.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// Returns an error if the parameter configuration is invalid.
     pub fn build(self) -> Result<Params> {
         Ok(Params {

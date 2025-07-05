@@ -31,21 +31,21 @@ let decrypted = result[0].decrypt(&client_key)?;
 
 pub mod prelude;
 
-mod params;
-mod keys;
 mod ciphertext;
 mod circuit;
+mod keys;
+mod params;
 
 #[cfg(test)]
 mod tests;
 
 // Public re-exports
-pub use params::Params;
-pub use keys::{Keyset, ClientKeyBytes, ServerKeyBytes};
+pub use ciphertext::BoolCt;
 #[cfg(feature = "integer8")]
 pub use ciphertext::Uint8Ct;
-pub use ciphertext::BoolCt;
 pub use circuit::{Circuit, CircuitBuilder, EncryptedCircuit};
+pub use keys::{ClientKeyBytes, Keyset, ServerKeyBytes};
+pub use params::Params;
 
 // Conditional compile for macros
 #[cfg(feature = "macros")]

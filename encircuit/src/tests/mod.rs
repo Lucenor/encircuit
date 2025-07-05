@@ -30,9 +30,9 @@ mod unit_tests {
         let and1 = builder.and(not_y, x);
         let and2 = builder.and(x, y);
         let output = builder.or(and1, and2);
-        
+
         let circuit = builder.finish(output);
-        
+
         assert_eq!(circuit.input_count(), 2);
         assert_eq!(circuit.gate_count(), 6); // 2 inputs + 1 not + 2 and + 1 or
     }
@@ -47,10 +47,10 @@ mod unit_tests {
         let and_gate = builder.and(x, not_y);
         let or_gate = builder.or(and_gate, const_true);
         let xor_gate = builder.xor(or_gate, y);
-        
+
         let circuit = builder.finish(xor_gate);
         let stats = circuit.stats();
-        
+
         assert_eq!(stats.inputs, 2);
         assert_eq!(stats.constants, 1);
         assert_eq!(stats.not_gates, 1);

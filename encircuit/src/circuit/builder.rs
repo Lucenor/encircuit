@@ -29,7 +29,7 @@ pub enum Gate {
 }
 
 /// Builder for constructing Boolean circuits.
-/// 
+///
 /// The `CircuitBuilder` maintains gates in topological order to ensure
 /// efficient evaluation during FHE computation.
 #[derive(Debug, Default)]
@@ -46,49 +46,49 @@ impl CircuitBuilder {
     }
 
     /// Add an input gate to the circuit.
-    /// 
+    ///
     /// Returns the `NodeId` for this input.
     pub fn input(&mut self) -> NodeId {
         self.add_gate(Gate::Input)
     }
 
     /// Add a constant gate to the circuit.
-    /// 
+    ///
     /// Returns the `NodeId` for this constant.
     pub fn constant(&mut self, value: bool) -> NodeId {
         self.add_gate(Gate::Constant(value))
     }
 
     /// Add an AND gate to the circuit.
-    /// 
+    ///
     /// Returns the `NodeId` for the result of the AND operation.
     pub fn and(&mut self, left: NodeId, right: NodeId) -> NodeId {
         self.add_gate(Gate::And(left, right))
     }
 
     /// Add an OR gate to the circuit.
-    /// 
+    ///
     /// Returns the `NodeId` for the result of the OR operation.
     pub fn or(&mut self, left: NodeId, right: NodeId) -> NodeId {
         self.add_gate(Gate::Or(left, right))
     }
 
     /// Add an XOR gate to the circuit.
-    /// 
+    ///
     /// Returns the `NodeId` for the result of the XOR operation.
     pub fn xor(&mut self, left: NodeId, right: NodeId) -> NodeId {
         self.add_gate(Gate::Xor(left, right))
     }
 
     /// Add a NOT gate to the circuit.
-    /// 
+    ///
     /// Returns the `NodeId` for the result of the NOT operation.
     pub fn not(&mut self, input: NodeId) -> NodeId {
         self.add_gate(Gate::Not(input))
     }
 
     /// Finish building the circuit and return an immutable `Circuit`.
-    /// 
+    ///
     /// The `output` parameter specifies which node represents the circuit's output.
     pub fn finish(self, output: NodeId) -> super::Circuit {
         super::Circuit::new(self.gates, output)
@@ -98,17 +98,20 @@ impl CircuitBuilder {
     fn add_gate(&mut self, gate: Gate) -> NodeId {
         let node_id = NodeId(self.next_id);
         self.next_id += 1;
-        
+
         let gate_index = self.gates.len();
         self.gates.push(gate);
         self.node_map.insert(node_id, gate_index);
-        
+
         node_id
     }
 
     /// Get the number of inputs in the circuit.
     pub fn input_count(&self) -> usize {
-        self.gates.iter().filter(|gate| matches!(gate, Gate::Input)).count()
+        self.gates
+            .iter()
+            .filter(|gate| matches!(gate, Gate::Input))
+            .count()
     }
 
     /// Get the total number of gates in the circuit.

@@ -6,14 +6,14 @@ with encrypted inputs, ready for homomorphic evaluation.
 */
 
 use crate::{
-    circuit::{Circuit, Gate, NodeId},
     ciphertext::BoolCt,
+    circuit::{Circuit, Gate, NodeId},
     keys::ServerKeyBytes,
 };
 use std::collections::HashMap;
 
 /// A circuit with encrypted inputs, ready for homomorphic evaluation.
-/// 
+///
 /// The `EncryptedCircuit` contains the circuit structure along with encrypted
 /// inputs and provides methods for evaluating the circuit on encrypted data.
 #[derive(Debug, Clone)]
@@ -24,7 +24,7 @@ pub struct EncryptedCircuit {
 
 impl EncryptedCircuit {
     /// Create a new encrypted circuit.
-    /// 
+    ///
     /// This is typically called by `Circuit::encrypt_inputs()`.
     pub(super) fn new(circuit: Circuit, encrypted_inputs: Vec<BoolCt>) -> Self {
         Self {
@@ -34,10 +34,10 @@ impl EncryptedCircuit {
     }
 
     /// Evaluate the circuit homomorphically using the server key.
-    /// 
+    ///
     /// This performs the computation on encrypted data without ever decrypting
     /// the inputs or intermediate values.
-    /// 
+    ///
     /// Returns a vector containing the encrypted outputs of the circuit.
     pub fn evaluate(&self, _server_key: &ServerKeyBytes) -> Vec<BoolCt> {
         let mut node_values: HashMap<NodeId, BoolCt> = HashMap::new();
@@ -46,7 +46,7 @@ impl EncryptedCircuit {
         // Walk through gates in topological order
         for (gate_index, gate) in self.circuit.gates().iter().enumerate() {
             let node_id = NodeId(gate_index);
-            
+
             let result = match gate {
                 Gate::Input => {
                     // Use the encrypted input
@@ -91,7 +91,7 @@ impl EncryptedCircuit {
     }
 
     /// Perform homomorphic AND operation.
-    /// 
+    ///
     /// This is a placeholder that will be replaced with actual TFHE operations.
     fn homomorphic_and(&self, _left: &BoolCt, _right: &BoolCt) -> BoolCt {
         // TODO: Implement using TFHE server key
@@ -99,7 +99,7 @@ impl EncryptedCircuit {
     }
 
     /// Perform homomorphic OR operation.
-    /// 
+    ///
     /// This is a placeholder that will be replaced with actual TFHE operations.
     fn homomorphic_or(&self, _left: &BoolCt, _right: &BoolCt) -> BoolCt {
         // TODO: Implement using TFHE server key
@@ -107,7 +107,7 @@ impl EncryptedCircuit {
     }
 
     /// Perform homomorphic XOR operation.
-    /// 
+    ///
     /// This is a placeholder that will be replaced with actual TFHE operations.
     fn homomorphic_xor(&self, _left: &BoolCt, _right: &BoolCt) -> BoolCt {
         // TODO: Implement using TFHE server key
@@ -115,7 +115,7 @@ impl EncryptedCircuit {
     }
 
     /// Perform homomorphic NOT operation.
-    /// 
+    ///
     /// This is a placeholder that will be replaced with actual TFHE operations.
     fn homomorphic_not(&self, _input: &BoolCt) -> BoolCt {
         // TODO: Implement using TFHE server key

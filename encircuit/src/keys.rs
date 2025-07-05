@@ -12,7 +12,7 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 /// A complete set of FHE keys containing both client and server keys.
-/// 
+///
 /// The `Keyset` provides a convenient way to manage both the client key
 /// (used for encryption/decryption) and server key (used for computation).
 #[derive(Debug, Clone)]
@@ -23,7 +23,7 @@ pub struct Keyset {
 }
 
 /// Serialized client key bytes.
-/// 
+///
 /// This type wraps the client key in a form that can be easily serialized
 /// and transmitted between different parts of an application.
 #[derive(Debug, Clone)]
@@ -33,7 +33,7 @@ pub struct ClientKeyBytes {
 }
 
 /// Serialized server key bytes.
-/// 
+///
 /// This type wraps the server key in a form that can be easily serialized
 /// and transmitted between different parts of an application.
 #[derive(Debug, Clone)]
@@ -44,9 +44,9 @@ pub struct ServerKeyBytes {
 
 impl Keyset {
     /// Generate a new keyset from the given parameters.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// Returns an error if key generation fails.
     pub fn generate(_params: &Params) -> Result<Self> {
         // TODO: Implement actual key generation using TFHE
@@ -54,7 +54,7 @@ impl Keyset {
     }
 
     /// Split the keyset into separate client and server keys.
-    /// 
+    ///
     /// Returns a tuple of (client_key, server_key).
     pub fn split(self) -> (ClientKeyBytes, ServerKeyBytes) {
         (self.client_key, self.server_key)

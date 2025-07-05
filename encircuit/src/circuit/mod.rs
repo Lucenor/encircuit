@@ -10,6 +10,6 @@ pub mod circuit;
 pub mod encrypted;
 
 // Re-exports for convenience
-pub use builder::{CircuitBuilder, NodeId, Gate};
+pub use builder::{CircuitBuilder, Gate, NodeId};
 pub use circuit::Circuit;
 pub use encrypted::EncryptedCircuit;
