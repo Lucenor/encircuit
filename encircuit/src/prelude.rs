@@ -14,7 +14,7 @@ pub use crate::{
 // Core traits
 pub use crate::ciphertext::{Decryptable, Encryptable, GateOps};
 
-#[cfg(feature = "integer8")]
+#[cfg(feature = "integer")]
 pub use crate::Uint8Ct;
 
 // Re-export common error types

@@ -24,7 +24,7 @@ pub struct BoolCt {
 /// An 8-bit unsigned integer ciphertext.
 ///
 /// `Uint8Ct` enables arithmetic operations on encrypted 8-bit values.
-#[cfg(feature = "integer8")]
+#[cfg(feature = "integer")]
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Uint8Ct {
@@ -126,7 +126,7 @@ impl GateOps for BoolCt {
     }
 }
 
-#[cfg(feature = "integer8")]
+#[cfg(feature = "integer")]
 impl Uint8Ct {
     /// Create a new 8-bit unsigned integer ciphertext from raw bytes.
     pub fn from_bytes(data: Vec<u8>) -> Self {
@@ -139,7 +139,7 @@ impl Uint8Ct {
     }
 }
 
-#[cfg(feature = "integer8")]
+#[cfg(feature = "integer")]
 impl Encryptable for u8 {
     type Ciphertext = Uint8Ct;
 
@@ -149,7 +149,7 @@ impl Encryptable for u8 {
     }
 }
 
-#[cfg(feature = "integer8")]
+#[cfg(feature = "integer")]
 impl Decryptable for Uint8Ct {
     type Plaintext = u8;
 

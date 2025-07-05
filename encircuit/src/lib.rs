@@ -41,7 +41,7 @@ mod tests;
 
 // Public re-exports
 pub use ciphertext::BoolCt;
-#[cfg(feature = "integer8")]
+#[cfg(feature = "integer")]
 pub use ciphertext::Uint8Ct;
 pub use circuit::{Circuit, CircuitBuilder, EncryptedCircuit};
 pub use keys::{ClientKeyBytes, Keyset, ServerKeyBytes};
