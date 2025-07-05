@@ -1,0 +1,21 @@
+[package]
+name = "encircuit_macros"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Procedural macros for the encircuit FHE toolkit"
+keywords = ["fhe", "cryptography", "homomorphic", "encryption", "macros"]
+categories = ["cryptography", "development-tools::procedural-macro-helpers"]
+readme = "README.md"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn.workspace = true
+quote.workspace = true
+proc-macro2.workspace = true
+
+[dev-dependencies]
+encircuit = { path = "../encircuit", default-features = false }
