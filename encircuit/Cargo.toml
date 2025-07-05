@@ -29,3 +29,8 @@ encircuit_macros = { path = "../encircuit_macros", optional = true }
 [dev-dependencies]
 criterion.workspace = true
 proptest.workspace = true
+
+# Examples showcasing macro integration
+[[example]]
+name = "macro_demo"
+required-features = ["macros"]
