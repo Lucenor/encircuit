@@ -1,9 +1,31 @@
 [package]
 name = "encircuit"
-version = "0.0.1-alpha.0"
-edition = "2024"
-description = "Zero-overhead Rust toolkit for building, encrypting & evaluating fully homomorphic (FHE) circuits"
-license = "Apache-2.0"
-repository = "https://github.com/lucenor/encircuit"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description.workspace = true
+
+[features]
+default = ["boolean", "parallel", "serde"]
+boolean = []
+integer8 = []
+parallel = ["dep:rayon"]
+gpu = ["tfhe/gpu"]
+serde = ["dep:serde", "dep:serde_json"]
+macros = ["dep:encircuit_macros"]
 
 [dependencies]
+tfhe.workspace = true
+anyhow.workspace = true
+thiserror.workspace = true
+
+# Optional dependencies
+serde = { workspace = true, optional = true }
+serde_json = { workspace = true, optional = true }
+rayon = { workspace = true, optional = true }
+encircuit_macros = { path = "../encircuit_macros", optional = true }
+
+[dev-dependencies]
+criterion.workspace = true
+proptest.workspace = true
