@@ -53,13 +53,15 @@ fn demo_manual_vs_macro() {
     #[cfg(not(feature = "macros"))]
     let macro_circuit = manual_circuit.clone();
 
-    println!("Manual circuit: {} inputs, {} gates", 
-        manual_circuit.input_count(), 
+    println!(
+        "Manual circuit: {} inputs, {} gates",
+        manual_circuit.input_count(),
         manual_circuit.stats().total_gates
     );
-    
-    println!("Macro circuit:  {} inputs, {} gates", 
-        macro_circuit.input_count(), 
+
+    println!(
+        "Macro circuit:  {} inputs, {} gates",
+        macro_circuit.input_count(),
         macro_circuit.stats().total_gates
     );
 
@@ -79,10 +81,26 @@ fn demo_circuit_patterns() {
         let xor_gate = circuit! { |a, b| a ^ b };
         let not_gate = circuit! { |a| !a };
 
-        println!("AND gate: {} inputs -> {}", and_gate.input_count(), and_gate.stats().and_gates);
-        println!("OR gate:  {} inputs -> {}", or_gate.input_count(), or_gate.stats().or_gates);
-        println!("XOR gate: {} inputs -> {}", xor_gate.input_count(), xor_gate.stats().xor_gates);
-        println!("NOT gate: {} inputs -> {}", not_gate.input_count(), not_gate.stats().not_gates);
+        println!(
+            "AND gate: {} inputs -> {}",
+            and_gate.input_count(),
+            and_gate.stats().and_gates
+        );
+        println!(
+            "OR gate:  {} inputs -> {}",
+            or_gate.input_count(),
+            or_gate.stats().or_gates
+        );
+        println!(
+            "XOR gate: {} inputs -> {}",
+            xor_gate.input_count(),
+            xor_gate.stats().xor_gates
+        );
+        println!(
+            "NOT gate: {} inputs -> {}",
+            not_gate.input_count(),
+            not_gate.stats().not_gates
+        );
 
         // Arithmetic circuits
         let half_adder_sum = circuit! { |a, b| a ^ b };
@@ -91,10 +109,22 @@ fn demo_circuit_patterns() {
         let full_adder_carry = circuit! { |a, b, cin| (a & b) | (a & cin) | (b & cin) };
 
         println!("\nArithmetic Circuits:");
-        println!("Half adder sum:   {} gates", half_adder_sum.stats().total_gates);
-        println!("Half adder carry: {} gates", half_adder_carry.stats().total_gates);
-        println!("Full adder sum:   {} gates", full_adder_sum.stats().total_gates);
-        println!("Full adder carry: {} gates", full_adder_carry.stats().total_gates);
+        println!(
+            "Half adder sum:   {} gates",
+            half_adder_sum.stats().total_gates
+        );
+        println!(
+            "Half adder carry: {} gates",
+            half_adder_carry.stats().total_gates
+        );
+        println!(
+            "Full adder sum:   {} gates",
+            full_adder_sum.stats().total_gates
+        );
+        println!(
+            "Full adder carry: {} gates",
+            full_adder_carry.stats().total_gates
+        );
 
         // Universal gates
         let nand = circuit! { |a, b| !(a & b) };
@@ -124,7 +154,7 @@ fn demo_circuit_analysis() {
     #[cfg(feature = "macros")]
     {
         // Complex circuit for analysis
-        let complex = circuit! { |w, x, y, z| 
+        let complex = circuit! { |w, x, y, z|
             ((w & x) | (y ^ z)) & (!w | !z)
         };
 
@@ -140,11 +170,11 @@ fn demo_circuit_analysis() {
 
         // Test with different input patterns
         println!("\nCircuit complexity comparison:");
-        
+
         let simple = circuit! { |a, b| a & b };
         let medium = circuit! { |a, b, c| (a & b) | c };
         let complex2 = circuit! { |a, b, c, d| (a ^ b) & (c | d) };
-        
+
         println!("Simple:  {} gates", simple.stats().total_gates);
         println!("Medium:  {} gates", medium.stats().total_gates);
         println!("Complex: {} gates", complex2.stats().total_gates);
