@@ -12,13 +12,11 @@ categories.workspace = true
 readme = "README.md"
 
 [features]
-default = ["boolean", "parallel", "serde"]
-boolean = ["tfhe/boolean"]
-integer = ["tfhe/integer"]
+default = ["parallel", "serde"]
 parallel = ["dep:rayon"]
 gpu = ["tfhe/gpu"]
 hpu = ["tfhe/hpu"]
-serde = ["dep:serde", "dep:serde_json"]
+serde = ["dep:serde", "dep:bincode"]
 macros = ["dep:encircuit_macros"]
 
 [dependencies]
@@ -28,7 +26,7 @@ thiserror.workspace = true
 
 # Optional dependencies
 serde = { workspace = true, optional = true }
-serde_json = { workspace = true, optional = true }
+bincode = { workspace = true, optional = true }
 rayon = { workspace = true, optional = true }
 encircuit_macros = { path = "../encircuit_macros", optional = true }
 
