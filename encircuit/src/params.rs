@@ -3,129 +3,127 @@ Parameter configuration for FHE operations.
 
 This module provides opinionated presets that wrap TFHE configuration to make
 it easier to configure FHE parameters for common use cases.
+
+## Scenario-Based Parameter Selection
+
+The module supports scenario-based parameter selection through the [`Scenario`] enum,
+which maps common use cases to appropriate TFHE parameter sets:
+
+- **SafeAndBalanced**: General-purpose circuits with good security/performance balance
+- **DeepCircuitUltraLowError**: Deep circuits requiring ultra-low error probability  
+- **FastDemo**: Quick prototyping with minimal security requirements
+- **MaxSecurityMinimalOps**: Maximum security for minimal operations
+
+## Example
+
+```rust,no_run
+use encircuit::prelude::*;
+# fn main() -> anyhow::Result<()> {
+
+// Using scenarios for easy parameter selection
+let params = Params::for_scenario(Scenario::SafeAndBalanced)?;
+let keyset = Keyset::generate(&params)?;
+
+// Different scenarios for different use cases
+let demo_params = Params::for_scenario(Scenario::FastDemo)?;
+let secure_params = Params::for_scenario(Scenario::MaxSecurityMinimalOps)?;
+# Ok(())
+# }
+```
 */
 
 use anyhow::Result;
+use tfhe::boolean::parameters::BooleanParameters;
 
-/// FHE parameter configuration builder.
+/// Describes typical TFHE usage scenarios with different security/performance trade-offs.
 ///
-/// Provides opinionated presets for common FHE configurations.
-#[derive(Debug, Clone)]
-pub struct Builder {
-    security_level: SecurityLevel,
-    operation_types: Vec<OperationType>,
+/// Each scenario maps to a specific set of TFHE Boolean parameters that have been
+/// carefully selected for that use case.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Scenario {
+    /// Safe and balanced use (default for general-purpose circuits).
+    ///
+    /// Provides good security with reasonable performance. Suitable for most
+    /// production applications that need a balance between security and speed.
+    SafeAndBalanced,
+    
+    /// Deep circuits with ultra-low error probability.
+    ///
+    /// Optimized for circuits with many sequential operations where error
+    /// accumulation is a concern. Provides 2^-165 error probability.
+    DeepCircuitUltraLowError,
+    
+    /// Fast, low-sensitivity demo or prototype.
+    ///
+    /// Prioritizes performance over security. Suitable for demonstrations,
+    /// prototypes, or applications where speed is more important than security.
+    FastDemo,
+    
+    /// Maximum security with minimal operations.
+    ///
+    /// Provides the highest security level with ultra-low error probability.
+    /// Best for high-security applications with relatively simple circuits.
+    MaxSecurityMinimalOps,
 }
 
-/// Compiled FHE parameters ready for key generation.
+/// Returns the recommended TFHE BooleanParameters for the given scenario.
+///
+/// This function maps each scenario to specific TFHE parameter constants that
+/// have been validated for that use case.
+///
+/// # Arguments
+///
+/// * `scenario` - The usage scenario to get parameters for
+///
+/// # Returns
+///
+/// A reference to the appropriate TFHE `BooleanParameters` constant.
+pub fn scenario_to_tfhe_params(scenario: Scenario) -> &'static BooleanParameters {
+    use tfhe::boolean::prelude::*;
+    
+    match scenario {
+        Scenario::SafeAndBalanced => &DEFAULT_PARAMETERS,
+        Scenario::DeepCircuitUltraLowError => &PARAMETERS_ERROR_PROB_2_POW_MINUS_165, 
+        Scenario::FastDemo => &DEFAULT_PARAMETERS_KS_PBS,
+        Scenario::MaxSecurityMinimalOps => &PARAMETERS_ERROR_PROB_2_POW_MINUS_165_KS_PBS,
+    }
+}
+
+/// FHE parameter configuration.
+///
+/// Provides opinionated presets for common FHE configurations using scenario-based
+/// parameter selection.
 #[derive(Debug, Clone)]
 pub struct Params {
-    security_level: SecurityLevel,
-    operation_types: Vec<OperationType>,
-}
-
-/// Security level for FHE operations.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum SecurityLevel {
-    /// 128-bit security level (recommended)
-    Security128,
-    /// 256-bit security level (high security)
-    Security256,
-}
-
-/// Types of operations supported.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum OperationType {
-    /// Boolean operations (AND, OR, XOR, NOT)
-    Boolean,
-    /// 8-bit integer operations
-    Integer8,
-    /// 32-bit integer operations
-    Integer32,
-}
-
-impl Builder {
-    /// Create a new parameter builder with default settings.
-    pub fn new() -> Self {
-        Self {
-            security_level: SecurityLevel::Security128,
-            operation_types: vec![OperationType::Boolean],
-        }
-    }
-
-    /// Configure for 128-bit security level.
-    ///
-    /// This is the recommended security level for most applications.
-    pub fn security_128(mut self) -> Self {
-        self.security_level = SecurityLevel::Security128;
-        self
-    }
-
-    /// Configure for 256-bit security level.
-    ///
-    /// This provides higher security but with increased computation cost.
-    pub fn security_256(mut self) -> Self {
-        self.security_level = SecurityLevel::Security256;
-        self
-    }
-
-    /// Configure for Boolean operations only.
-    ///
-    /// This enables efficient Boolean circuit evaluation.
-    pub fn boolean_only(mut self) -> Self {
-        self.operation_types = vec![OperationType::Boolean];
-        self
-    }
-
-    /// Enable 8-bit integer operations.
-    pub fn with_integer8(mut self) -> Self {
-        if !self.operation_types.contains(&OperationType::Integer8) {
-            self.operation_types.push(OperationType::Integer8);
-        }
-        self
-    }
-
-    /// Build the final parameters.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the parameter configuration is invalid.
-    pub fn build(self) -> Result<Params> {
-        Ok(Params {
-            security_level: self.security_level,
-            operation_types: self.operation_types,
-        })
-    }
-}
-
-impl Default for Builder {
-    fn default() -> Self {
-        Self::new()
-    }
+    scenario: Scenario,
 }
 
 impl Params {
-    /// Create a new parameter builder.
-    pub fn builder() -> Builder {
-        Builder::new()
+    /// Create parameters directly from a scenario.
+    ///
+    /// This creates parameters optimized for the specified scenario with Boolean operations.
+    pub fn for_scenario(scenario: Scenario) -> Result<Self> {
+        Ok(Self {
+            scenario,
+        })
     }
 
-    /// Get the security level.
-    pub fn security_level(&self) -> SecurityLevel {
-        self.security_level
-    }
-
-    /// Get the supported operation types.
-    pub fn operation_types(&self) -> &[OperationType] {
-        &self.operation_types
+    /// Get the scenario.
+    pub fn scenario(&self) -> Scenario {
+        self.scenario
     }
 
     /// Check if Boolean operations are supported.
+    /// 
+    /// Always returns true as this implementation only supports Boolean operations.
     pub fn supports_boolean(&self) -> bool {
-        self.operation_types.contains(&OperationType::Boolean)
+        true
     }
 
-    /// Check if 8-bit integer operations are supported.
-    pub fn supports_integer8(&self) -> bool {
-        self.operation_types.contains(&OperationType::Integer8)
+    /// Get the TFHE Boolean parameters for key generation.
+    ///
+    /// Uses the scenario to select appropriate TFHE parameters.
+    pub fn tfhe_boolean_params(&self) -> &'static BooleanParameters {
+        scenario_to_tfhe_params(self.scenario)
     }
 }
