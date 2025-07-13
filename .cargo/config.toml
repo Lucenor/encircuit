@@ -1,0 +1,5 @@
+[env]
+# Increase stack size for tests to prevent overflow with TFHE operations
+# TFHE cryptographic operations require large stack frames, especially in debug mode
+# Default Rust stack size (2MB on most platforms) is insufficient for parallel FHE tests
+RUST_MIN_STACK = "8388608"  # 8MB stack size
