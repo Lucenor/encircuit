@@ -5,8 +5,6 @@ This module provides the `CircuitBuilder` which allows users to construct
 Boolean circuits by adding gates and maintaining topological order.
 */
 
-use std::collections::HashMap;
-
 /// Unique identifier for a node in the circuit.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct NodeId(pub(crate) usize);
@@ -35,8 +33,6 @@ pub enum Gate {
 #[derive(Debug, Default)]
 pub struct CircuitBuilder {
     gates: Vec<Gate>,
-    node_map: HashMap<NodeId, usize>,
-    next_id: usize,
 }
 
 impl CircuitBuilder {
@@ -96,13 +92,8 @@ impl CircuitBuilder {
 
     /// Add a gate to the circuit and return its NodeId.
     fn add_gate(&mut self, gate: Gate) -> NodeId {
-        let node_id = NodeId(self.next_id);
-        self.next_id += 1;
-
-        let gate_index = self.gates.len();
+        let node_id = NodeId(self.gates.len());
         self.gates.push(gate);
-        self.node_map.insert(node_id, gate_index);
-
         node_id
     }
 
@@ -124,5 +115,14 @@ impl NodeId {
     /// Get the raw ID value.
     pub fn id(self) -> usize {
         self.0
+    }
+
+    /// Create a new NodeId from a raw value.
+    /// 
+    /// Note: This should generally only be used internally.
+    /// Use `CircuitBuilder` methods to create nodes in normal usage.
+    #[allow(dead_code)]
+    pub(crate) fn new(id: usize) -> Self {
+        Self(id)
     }
 }

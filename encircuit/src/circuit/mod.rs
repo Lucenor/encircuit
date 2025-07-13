@@ -6,10 +6,11 @@ Boolean circuits using fully homomorphic encryption.
 */
 
 pub mod builder;
+#[allow(clippy::module_inception)]
 pub mod circuit;
 pub mod encrypted;
 
 // Re-exports for convenience
 pub use builder::{CircuitBuilder, Gate, NodeId};
-pub use circuit::Circuit;
+pub use circuit::{Circuit, CircuitComplexity};
 pub use encrypted::EncryptedCircuit;
