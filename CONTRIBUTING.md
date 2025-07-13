@@ -44,8 +44,7 @@ Before submitting any pull request, ensure you've completed all items in this ch
 
 - [ ] New ciphertext types implement required traits:
   - `Encryptable` - for encryption from plaintext
-  - `Decryptable` - for decryption to plaintext  
-  - `GateOps` - if the type supports Boolean operations
+  - `Decryptable` - for decryption to plaintext
 - [ ] Add compile-fail tests ensuring no `ClientKey` leaks into server builds
 - [ ] Verify that server-side code cannot access client keys
 - [ ] Ensure proper separation of client/server responsibilities

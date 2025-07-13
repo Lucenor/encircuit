@@ -10,6 +10,8 @@
 
 Encircuit is a high-level Rust library for building and evaluating Boolean circuits using fully homomorphic encryption (FHE). It provides a clean, ergonomic API for constructing circuits, encrypting inputs, and performing computations on encrypted data without ever decrypting intermediate values.
 
+**Architecture**: Encircuit focuses on Boolean circuits with an extensible trait-based architecture. While currently Boolean-only, the foundation supports future integer types through feature flags without breaking changes.
+
 ## Features
 
 - **🛠️ Circuit Builder**: Intuitive API for constructing Boolean circuits
@@ -18,6 +20,7 @@ Encircuit is a high-level Rust library for building and evaluating Boolean circu
 - **🔧 Flexible Parameters**: Configurable security levels and operation types
 - **📦 Modular Design**: Optional features for different use cases
 - **🎯 Type Safety**: Rust's type system ensures correctness at compile time
+- **🚀 Extensible Architecture**: Trait-based design enables future integer support
 
 ## Quick Start
 
@@ -34,7 +37,7 @@ encircuit = "0.0.1-alpha.0"
 use encircuit::prelude::*;
 
 // Generate parameters and keys
-let params = Params::builder().security_128().boolean_only().build()?;
+let params = Params::for_scenario(Scenario::SafeAndBalanced)?;
 let keyset = Keyset::generate(&params)?;
 let (client_key, server_key) = keyset.split();
 
@@ -79,10 +82,11 @@ encircuit/
 | Feature | Default | Description |
 |---------|---------|-------------|
 | `boolean` | ✅ | Boolean FHE operations |
-| `integer8` | ❌ | 8-bit integer operations |
 | `parallel` | ✅ | Parallel encryption using Rayon |
 | `serde` | ✅ | Serialization support |
 | `macros` | ❌ | Procedural macro support |
+| `integer8` | ❌ | *(future)* 8-bit integer ciphertext support |
+| `integer32` | ❌ | *(future)* 32-bit integer ciphertext support |
 
 ## Current Status
 
@@ -94,15 +98,13 @@ encircuit/
 - ✅ Type-safe circuit representation
 - ✅ Parameter configuration
 - ✅ Key management structures
-- ✅ Ciphertext abstractions
+- ✅ Ciphertext abstractions with production-ready serialization
 - ✅ Comprehensive test suite
 
 **TODO:**
 
-- 🔄 Actual TFHE integration (currently uses placeholders)
 - 🔄 `circuit!` procedural macro implementation
-- 🔄 Performance optimizations
-- 🔄 Extended integer support
+- 🔄 Performance optimizations  
 - 🔄 Documentation improvements
 
 ## Contributing
@@ -126,5 +128,5 @@ Licensed under the Apache License, Version 2.0 ([LICENSE](LICENSE) or <http://ww
 | **M2** | Macros | `circuit!` procedural macro |
 | **M3** | DSL | Text/JSON → Circuit parser |
 | **M4** | Runtime | gRPC/HTTP circuit evaluation service |
-| **M5** | Extended Types | 8-bit and 32-bit integer support |
+| **M5** | Extended Types | Integer ciphertext types (Int8Ct, Int32Ct via feature flags) |
 | **M6** | Performance | GPU acceleration |
