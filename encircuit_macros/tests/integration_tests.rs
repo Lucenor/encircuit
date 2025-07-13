@@ -199,10 +199,7 @@ fn test_circuit_can_be_used_with_builder() {
     let _circuit = circuit! { |a, b| a & b };
 
     // This should work without errors (even though it uses placeholder implementations)
-    let _params = Params::builder()
-        .security_128()
-        .boolean_only()
-        .build()
+    let _params = Params::for_scenario(Scenario::SafeAndBalanced)
         .unwrap();
 
     // The rest would require actual FHE implementation

@@ -33,7 +33,7 @@ use encircuit_macros::circuit;
 let my_circuit = circuit! { |a, b, c| (a & b) | (!c) };
 
 // Use with the encircuit API
-let params = Params::builder().security_128().boolean_only().build().unwrap();
+let params = Params::for_scenario(Scenario::SafeAndBalanced).unwrap();
 let keyset = Keyset::generate(&params).unwrap();
 let (client_key, server_key) = keyset.split();
 
@@ -227,7 +227,7 @@ at your option.
 ## Roadmap
 
 - **Current**: Boolean operations with natural syntax
-- **Future**: Integer operations, circuit optimization hints, advanced syntax
+- **Future**: Circuit optimization hints, advanced syntax
 - **Long-term**: Integration with circuit visualization and analysis tools
 
 ---

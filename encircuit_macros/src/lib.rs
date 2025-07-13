@@ -354,7 +354,6 @@ fn generate_circuit_code(closure: &CircuitClosure) -> Result<TokenStream2> {
 /// # Future Enhancements
 ///
 /// Planned improvements include:
-/// - Support for integer operations (when the `integer8` feature is enabled)
 /// - Circuit optimization hints
 /// - Compile-time circuit analysis and warnings
 /// - Integration with circuit visualization tools
