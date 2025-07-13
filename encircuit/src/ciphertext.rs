@@ -3,6 +3,9 @@ Ciphertext types and operations for FHE.
 
 This module provides wrapper types around TFHE ciphertexts with additional
 functionality for encryption, decryption, and circuit operations.
+
+The architecture uses extensible traits (Encryptable/Decryptable) to support
+future addition of integer types while maintaining a Boolean-focused core.
 */
 
 use crate::keys::ClientKeyBytes;
@@ -15,33 +18,16 @@ use serde::{Deserialize, Serialize};
 ///
 /// `BoolCt` wraps TFHE's Boolean ciphertext type and provides a clean
 /// interface for encryption, decryption, and Boolean operations.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct BoolCt {
-    data: Vec<u8>, // Placeholder for actual TFHE ciphertext
-}
-
-/// An 8-bit unsigned integer ciphertext.
-///
-/// `Uint8Ct` enables arithmetic operations on encrypted 8-bit values.
-#[cfg(feature = "integer")]
-#[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub struct Uint8Ct {
-    data: Vec<u8>, // Placeholder for actual TFHE ciphertext
-}
-
-/// Generic encrypted value wrapper.
-///
-/// This provides a type-safe way to work with encrypted values of different types.
-#[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub struct Encrypted<T> {
-    data: Vec<u8>,
-    _phantom: std::marker::PhantomData<T>,
+    ciphertext: tfhe::boolean::prelude::Ciphertext,
 }
 
 /// Trait for types that can be encrypted.
+///
+/// This trait provides the extensible foundation for supporting multiple
+/// ciphertext types (Boolean, integers, etc.) while maintaining type safety.
 pub trait Encryptable {
     /// The ciphertext type produced by encryption.
     type Ciphertext;
@@ -51,6 +37,9 @@ pub trait Encryptable {
 }
 
 /// Trait for types that can be decrypted.
+///
+/// This trait provides the extensible foundation for supporting multiple
+/// ciphertext types (Boolean, integers, etc.) while maintaining type safety.
 pub trait Decryptable {
     /// The plaintext type produced by decryption.
     type Plaintext;
@@ -59,117 +48,84 @@ pub trait Decryptable {
     fn decrypt(&self, client_key: &ClientKeyBytes) -> Result<Self::Plaintext>;
 }
 
-/// Trait for Boolean gate operations on ciphertexts.
-pub trait GateOps {
-    /// Compute the logical AND of two ciphertexts.
-    fn and(&self, other: &Self) -> Self;
-
-    /// Compute the logical OR of two ciphertexts.
-    fn or(&self, other: &Self) -> Self;
-
-    /// Compute the logical XOR of two ciphertexts.
-    fn xor(&self, other: &Self) -> Self;
-
-    /// Compute the logical NOT of this ciphertext.
-    fn not(&self) -> Self;
-}
-
 impl BoolCt {
     /// Create a new Boolean ciphertext from raw bytes.
-    pub fn from_bytes(data: Vec<u8>) -> Self {
-        Self { data }
+    /// 
+    /// This deserializes a ciphertext that was previously serialized with [`to_bytes`].
+    /// In production, use `bool::encrypt()` with a client key for new ciphertexts.
+    pub fn from_bytes(data: Vec<u8>) -> Result<Self> {
+        #[cfg(feature = "serde")]
+        {
+            // Use bincode to deserialize the TFHE ciphertext directly
+            let ciphertext: tfhe::boolean::prelude::Ciphertext = bincode::deserialize(&data)
+                .map_err(|e| anyhow::anyhow!("Ciphertext deserialization failed: {}", e))?;
+            Ok(Self { ciphertext })
+        }
+        #[cfg(not(feature = "serde"))]
+        {
+            let _ = data; // Suppress unused warning
+            anyhow::bail!("Deserialization requires 'serde' feature to be enabled")
+        }
     }
 
-    /// Get the raw bytes of this ciphertext.
-    pub fn as_bytes(&self) -> &[u8] {
-        &self.data
+    /// Serialize the ciphertext to bytes using TFHE's native serialization.
+    ///
+    /// This uses bincode for efficient binary serialization of TFHE ciphertexts.
+    /// The returned bytes can be stored or transmitted and later 
+    /// reconstructed using [`BoolCt::from_bytes`].
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if serialization fails.
+    pub fn to_bytes(&self) -> Result<Vec<u8>> {
+        #[cfg(feature = "serde")]
+        {
+            // Use bincode to serialize the TFHE ciphertext directly
+            // TFHE-rs implements Serialize for its ciphertext types
+            bincode::serialize(&self.ciphertext)
+                .map_err(|e| anyhow::anyhow!("Ciphertext serialization failed: {}", e))
+        }
+        #[cfg(not(feature = "serde"))]
+        {
+            anyhow::bail!("Serialization requires 'serde' feature to be enabled")
+        }
     }
+
+    /// Create a BoolCt from a TFHE ciphertext.
+    pub fn from_tfhe_ciphertext(ciphertext: tfhe::boolean::prelude::Ciphertext) -> Self {
+        Self { ciphertext }
+    }
+
+    /// Get the underlying TFHE ciphertext.
+    pub fn tfhe_ciphertext(&self) -> &tfhe::boolean::prelude::Ciphertext {
+        &self.ciphertext
+    }
+
 }
 
 impl Encryptable for bool {
     type Ciphertext = BoolCt;
 
-    fn encrypt(&self, _client_key: &ClientKeyBytes) -> Result<Self::Ciphertext> {
-        // TODO: Implement actual encryption using TFHE
-        todo!("Boolean encryption not yet implemented")
+    fn encrypt(&self, client_key: &ClientKeyBytes) -> Result<Self::Ciphertext> {
+        let tfhe_key = client_key.tfhe_key()?;
+        let ciphertext = tfhe_key.encrypt(*self);
+        Ok(BoolCt::from_tfhe_ciphertext(ciphertext))
     }
 }
 
 impl Decryptable for BoolCt {
     type Plaintext = bool;
 
-    fn decrypt(&self, _client_key: &ClientKeyBytes) -> Result<Self::Plaintext> {
-        // TODO: Implement actual decryption using TFHE
-        todo!("Boolean decryption not yet implemented")
+    fn decrypt(&self, client_key: &ClientKeyBytes) -> Result<Self::Plaintext> {
+        let tfhe_key = client_key.tfhe_key()?;
+        Ok(tfhe_key.decrypt(&self.ciphertext))
     }
 }
 
-impl GateOps for BoolCt {
-    fn and(&self, _other: &Self) -> Self {
-        // TODO: Implement actual AND operation using TFHE
-        todo!("Boolean AND operation not yet implemented")
-    }
-
-    fn or(&self, _other: &Self) -> Self {
-        // TODO: Implement actual OR operation using TFHE
-        todo!("Boolean OR operation not yet implemented")
-    }
-
-    fn xor(&self, _other: &Self) -> Self {
-        // TODO: Implement actual XOR operation using TFHE
-        todo!("Boolean XOR operation not yet implemented")
-    }
-
-    fn not(&self) -> Self {
-        // TODO: Implement actual NOT operation using TFHE
-        todo!("Boolean NOT operation not yet implemented")
-    }
-}
-
-#[cfg(feature = "integer")]
-impl Uint8Ct {
-    /// Create a new 8-bit unsigned integer ciphertext from raw bytes.
-    pub fn from_bytes(data: Vec<u8>) -> Self {
-        Self { data }
-    }
-
-    /// Get the raw bytes of this ciphertext.
-    pub fn as_bytes(&self) -> &[u8] {
-        &self.data
-    }
-}
-
-#[cfg(feature = "integer")]
-impl Encryptable for u8 {
-    type Ciphertext = Uint8Ct;
-
-    fn encrypt(&self, _client_key: &ClientKeyBytes) -> Result<Self::Ciphertext> {
-        // TODO: Implement actual encryption using TFHE
-        todo!("U8 encryption not yet implemented")
-    }
-}
-
-#[cfg(feature = "integer")]
-impl Decryptable for Uint8Ct {
-    type Plaintext = u8;
-
-    fn decrypt(&self, _client_key: &ClientKeyBytes) -> Result<Self::Plaintext> {
-        // TODO: Implement actual decryption using TFHE
-        todo!("U8 decryption not yet implemented")
-    }
-}
-
-impl<T> Encrypted<T> {
-    /// Create a new encrypted value from raw bytes.
-    pub fn from_bytes(data: Vec<u8>) -> Self {
-        Self {
-            data,
-            _phantom: std::marker::PhantomData,
-        }
-    }
-
-    /// Get the raw bytes of this encrypted value.
-    pub fn as_bytes(&self) -> &[u8] {
-        &self.data
+impl std::fmt::Debug for BoolCt {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("BoolCt")
+            .field("encrypted", &"<encrypted_data>")
+            .finish()
     }
 }
