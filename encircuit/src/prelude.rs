@@ -7,15 +7,15 @@ from the encircuit crate with a single `use encircuit::prelude::*;` statement.
 
 // Core types
 pub use crate::{
-    BoolCt, Circuit, CircuitBuilder, ClientKeyBytes, EncryptedCircuit, Keyset, Params,
+    BoolCt, Circuit, CircuitBuilder, CircuitComplexity, ClientKeyBytes, EncryptedCircuit, Keyset, Params,
     ServerKeyBytes,
 };
 
-// Core traits
-pub use crate::ciphertext::{Decryptable, Encryptable, GateOps};
+// Parameter configuration
+pub use crate::params::Scenario;
 
-#[cfg(feature = "integer")]
-pub use crate::Uint8Ct;
+// Core traits
+pub use crate::ciphertext::{Decryptable, Encryptable};
 
 // Re-export common error types
 pub use anyhow::{Context, Error, Result};
