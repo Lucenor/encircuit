@@ -5,6 +5,9 @@ This module organizes comprehensive tests for all the core functionality
 of the encircuit FHE toolkit into focused test modules.
 */
 
+// Shared test fixtures and utilities for performance optimization
+mod fixtures;
+
 // Test modules organized by functionality
 mod params;       // Parameter configuration and scenario tests
 mod keys;         // Key generation and serialization tests  
