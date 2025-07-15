@@ -3,30 +3,29 @@ Tests for key generation, key management, and key serialization.
 */
 
 use crate::prelude::*;
+use super::fixtures::TestFixture;
 
 #[test]
 fn test_keyset_generation() {
-    let params = Params::for_scenario(Scenario::FastDemo)
-        .expect("Failed to create params");
-
-    let _keyset = Keyset::generate(&params).expect("Failed to generate keyset");
+    // This test verifies basic keyset generation works
+    let fixture = TestFixture::fast_demo();
+    
+    // Test that we can use the keys for basic operations
+    let value = true;
+    let encrypted = value.encrypt(&fixture.client_key).expect("Failed to encrypt");
+    let decrypted = encrypted.decrypt(&fixture.client_key).expect("Failed to decrypt");
+    assert_eq!(value, decrypted);
 }
 
 #[test]
 fn test_keyset_generation_with_different_scenarios() {
-    // Test SafeAndBalanced scenario
-    let params_safe = Params::for_scenario(Scenario::SafeAndBalanced)
-        .expect("Failed to create SafeAndBalanced params");
+    // Test SafeAndBalanced scenario using shared fixture
+    let fixture_safe = TestFixture::safe_balanced();
+    let (client_key_safe, _) = fixture_safe.keyset.clone().split();
 
-    let keyset_safe = Keyset::generate(&params_safe).expect("Failed to generate SafeAndBalanced keyset");
-    let (client_key_safe, _) = keyset_safe.split();
-
-    // Test MaxSecurityMinimalOps scenario
-    let params_max_security = Params::for_scenario(Scenario::MaxSecurityMinimalOps)
-        .expect("Failed to create MaxSecurityMinimalOps params");
-
-    let keyset_max_security = Keyset::generate(&params_max_security).expect("Failed to generate MaxSecurityMinimalOps keyset");
-    let (client_key_max_security, _) = keyset_max_security.split();
+    // Test MaxSecurityMinimalOps scenario using shared fixture
+    let fixture_max_security = TestFixture::max_security();
+    let (client_key_max_security, _) = fixture_max_security.keyset.clone().split();
 
     // Verify both keysets can encrypt/decrypt (basic functionality test)
     let value = true;
@@ -46,20 +45,13 @@ fn test_keyset_generation_with_different_scenarios() {
 
 #[test]
 fn test_keyset_generation_with_scenarios() {
-    let scenarios = [
-        Scenario::SafeAndBalanced,
-        Scenario::DeepCircuitUltraLowError,
-        Scenario::FastDemo,
-        Scenario::MaxSecurityMinimalOps,
-    ];
-
-    for scenario in scenarios {
-        let params = Params::for_scenario(scenario)
-            .expect("Failed to create params for scenario");
-        
-        let _keyset = Keyset::generate(&params)
-            .expect("Failed to generate keyset for scenario");
-    }
+    // Test all scenarios using shared fixtures for optimal performance
+    let _fixture_fast = TestFixture::fast_demo();
+    let _fixture_safe = TestFixture::safe_balanced();
+    let _fixture_deep = TestFixture::deep_circuit();
+    let _fixture_max_security = TestFixture::max_security();
+    
+    // All scenarios are now covered by fixtures - no manual generation needed!
 }
 
 #[cfg(feature = "serde")]
@@ -69,14 +61,10 @@ mod serde_tests {
 
     #[test]
     fn test_client_key_serialization_round_trip() {
-        let params = Params::for_scenario(Scenario::FastDemo)
-            .expect("Failed to create params");
-
-        let keyset = Keyset::generate(&params).expect("Failed to generate keyset");
-        let (client_key, _) = keyset.split();
+        let fixture = TestFixture::fast_demo();
 
         // Test round-trip serialization
-        let serialized = client_key.as_bytes().expect("Failed to serialize client key");
+        let serialized = fixture.client_key.as_bytes().expect("Failed to serialize client key");
         let deserialized = ClientKeyBytes::from_bytes(serialized)
             .expect("Failed to deserialize client key");
 
@@ -90,14 +78,10 @@ mod serde_tests {
 
     #[test]
     fn test_server_key_serialization_round_trip() {
-        let params = Params::for_scenario(Scenario::FastDemo)
-            .expect("Failed to create params");
-
-        let keyset = Keyset::generate(&params).expect("Failed to generate keyset");
-        let (_, server_key) = keyset.split();
+        let fixture = TestFixture::fast_demo();
 
         // Test round-trip serialization
-        let serialized = server_key.as_bytes().expect("Failed to serialize server key");
+        let serialized = fixture.server_key.as_bytes().expect("Failed to serialize server key");
         let deserialized = ServerKeyBytes::from_bytes(serialized)
             .expect("Failed to deserialize server key");
 
@@ -107,13 +91,10 @@ mod serde_tests {
 
     #[test]
     fn test_keyset_serialization_round_trip() {
-        let params = Params::for_scenario(Scenario::FastDemo)
-            .expect("Failed to create params");
-
-        let original_keyset = Keyset::generate(&params).expect("Failed to generate keyset");
+        let fixture = TestFixture::fast_demo();
 
         // Test serde serialization of the entire keyset
-        let serialized = bincode::serialize(&original_keyset)
+        let serialized = bincode::serialize(&fixture.keyset)
             .expect("Failed to serialize keyset");
         let deserialized: Keyset = bincode::deserialize(&serialized)
             .expect("Failed to deserialize keyset");
@@ -155,15 +136,11 @@ mod serde_tests {
 
     #[test]
     fn test_key_serialization_size_check() {
-        let params = Params::for_scenario(Scenario::FastDemo)
-            .expect("Failed to create params");
-
-        let keyset = Keyset::generate(&params).expect("Failed to generate keyset");
-        let (client_key, server_key) = keyset.split();
+        let fixture = TestFixture::fast_demo();
 
         // Check that serialization produces non-empty data
-        let client_bytes = client_key.as_bytes().expect("Failed to serialize client key");
-        let server_bytes = server_key.as_bytes().expect("Failed to serialize server key");
+        let client_bytes = fixture.client_key.as_bytes().expect("Failed to serialize client key");
+        let server_bytes = fixture.server_key.as_bytes().expect("Failed to serialize server key");
 
         assert!(!client_bytes.is_empty(), "Client key serialization should not be empty");
         assert!(!server_bytes.is_empty(), "Server key serialization should not be empty");
@@ -180,11 +157,8 @@ mod no_serde_tests {
 
     #[test]
     fn test_key_serialization_without_serde_feature() {
-        let params = Params::for_scenario(Scenario::FastDemo)
-            .expect("Failed to create params");
-
-        let keyset = Keyset::generate(&params).expect("Failed to generate keyset");
-        let (client_key, server_key) = keyset.split();
+        // For this test we still need fresh keys since we're testing error conditions
+        let (client_key, server_key) = TestFixture::fresh_keyset(Scenario::FastDemo);
 
         // Without serde feature, serialization should fail
         let client_result = client_key.as_bytes();
