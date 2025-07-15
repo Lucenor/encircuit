@@ -3,6 +3,7 @@ Tests for circuit building, validation, complexity analysis, and evaluation.
 */
 
 use crate::prelude::*;
+use super::fixtures::{TestFixture, utils};
 
 #[test]
 fn test_circuit_builder() {
@@ -45,11 +46,7 @@ fn test_circuit_stats() {
 
 #[test]
 fn test_circuit_evaluation_with_constants() {
-    let params = Params::for_scenario(Scenario::FastDemo)
-        .expect("Failed to create params");
-
-    let keyset = Keyset::generate(&params).expect("Failed to generate keyset");
-    let (client_key, server_key) = keyset.split();
+    let fixture = TestFixture::fast_demo();
 
     // Build a circuit with constants: input OR true = true (regardless of input)
     let mut builder = CircuitBuilder::default();
@@ -60,24 +57,24 @@ fn test_circuit_evaluation_with_constants() {
 
     // Test with input false -> should be true (false OR true = true)
     let encrypted = circuit
-        .encrypt_inputs(&[false], &client_key)
+        .encrypt_inputs(&[false], &fixture.client_key)
         .expect("Failed to encrypt inputs");
 
-    let result = encrypted.evaluate(&server_key);
+    let result = encrypted.evaluate(&fixture.server_key);
     let decrypted = result[0]
-        .decrypt(&client_key)
+        .decrypt(&fixture.client_key)
         .expect("Failed to decrypt result");
 
     assert!(decrypted); // Should be true due to OR with constant true
 
     // Test with input true -> should be true (true OR true = true)
     let encrypted = circuit
-        .encrypt_inputs(&[true], &client_key)
+        .encrypt_inputs(&[true], &fixture.client_key)
         .expect("Failed to encrypt inputs");
 
-    let result = encrypted.evaluate(&server_key);
+    let result = encrypted.evaluate(&fixture.server_key);
     let decrypted = result[0]
-        .decrypt(&client_key)
+        .decrypt(&fixture.client_key)
         .expect("Failed to decrypt result");
 
     assert!(decrypted); // Should be true due to OR with constant true
@@ -85,12 +82,8 @@ fn test_circuit_evaluation_with_constants() {
 
 #[test]
 fn test_circuit_validation() {
-    // Test valid circuit
-    let mut builder = CircuitBuilder::default();
-    let x = builder.input();
-    let y = builder.input();
-    let output = builder.and(x, y);
-    let circuit = builder.finish(output);
+    // Test valid circuit using helper
+    let circuit = utils::and_circuit();
 
     assert!(circuit.validate().is_ok());
     assert!(!circuit.has_cycles());
@@ -119,28 +112,24 @@ fn test_circuit_complexity() {
 
 #[test]
 fn test_circuit_error_recovery() {
-    let params = Params::for_scenario(Scenario::FastDemo)
-        .expect("Failed to create params");
-
-    let keyset = Keyset::generate(&params).expect("Failed to generate keyset");
-    let (client_key, server_key) = keyset.split();
+    let fixture = TestFixture::fast_demo();
 
     let mut builder = CircuitBuilder::default();
     let x = builder.input();
     let output = builder.not(x);
     let circuit = builder.finish(output);
 
-    let encrypted = circuit.encrypt_inputs(&[true], &client_key)
+    let encrypted = circuit.encrypt_inputs(&[true], &fixture.client_key)
         .expect("Failed to encrypt inputs");
 
     // Test try_evaluate
-    let result = encrypted.try_evaluate(&server_key);
+    let result = encrypted.try_evaluate(&fixture.server_key);
     assert!(result.is_ok());
 
     // Test timeout evaluation (if parallel feature is enabled)
     #[cfg(feature = "parallel")]
     {
-        let result_with_timeout = encrypted.try_evaluate_with_timeout(&server_key, 5000);
+        let result_with_timeout = encrypted.try_evaluate_with_timeout(&fixture.server_key, 5000);
         assert!(result_with_timeout.is_ok());
     }
 }
@@ -148,38 +137,9 @@ fn test_circuit_error_recovery() {
 #[test]
 fn test_scenario_based_circuit_evaluation() {
     // Test that circuits work correctly with scenario-based parameters
-    let params = Params::for_scenario(Scenario::FastDemo)
-        .expect("Failed to create params");
-    
-    let keyset = Keyset::generate(&params)
-        .expect("Failed to generate keyset");
-    let (client_key, server_key) = keyset.split();
+    let fixture = TestFixture::fast_demo();
 
-    // Build a simple XOR circuit
-    let mut builder = CircuitBuilder::default();
-    let x = builder.input();
-    let y = builder.input();
-    let output = builder.xor(x, y);
-    let circuit = builder.finish(output);
-
-    // Test XOR truth table
-    let test_cases = [
-        ([false, false], false),
-        ([false, true], true),
-        ([true, false], true),
-        ([true, true], false),
-    ];
-
-    for (inputs, expected) in test_cases {
-        let encrypted = circuit
-            .encrypt_inputs(&inputs, &client_key)
-            .expect("Failed to encrypt inputs");
-
-        let result = encrypted.evaluate(&server_key);
-        let decrypted = result[0]
-            .decrypt(&client_key)
-            .expect("Failed to decrypt result");
-
-        assert_eq!(decrypted, expected, "XOR({:?}) should be {}", inputs, expected);
-    }
+    // Use the utility function to test XOR truth table
+    utils::test_xor_truth_table(&fixture.client_key, &fixture.server_key)
+        .expect("XOR truth table test should pass");
 }
